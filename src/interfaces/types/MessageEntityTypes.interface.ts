@@ -1,0 +1,19 @@
+export enum MessageEntityTypesInterface {
+	mention,
+	hashtag,
+	cashtag,
+	bot_command,
+	url,
+	email,
+	phone_number,
+	bold,
+	italic,
+	underline,
+	strikethrough,
+	spoiler,
+	code,
+	pre,
+	text_link,
+	text_mention,
+	custom_emoji
+}

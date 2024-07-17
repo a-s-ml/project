@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model chat {
+  id       Int      @id @unique(map: "unique_id") @default(autoincrement())
+  id_str   String   @unique(map: "unique_idstr") @db.VarChar(255)
+  chat     BigInt   @unique(map: "unique_chat")
+  type     String   @default("1") @db.VarChar(255)
+  bot      Int?     @default(0)
+  date     DateTime @default(now()) @db.Timestamp(0)
+  dateUnix Int
+  ref      String?  @db.VarChar(255)
+}
