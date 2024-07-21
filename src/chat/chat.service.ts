@@ -13,7 +13,7 @@ export class ChatService {
     private dbService: DbService,
     private getTgService: GetTgService,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async createChat(createChatDto: Prisma.chatCreateInput) {
     return await this.dbService.chat.create({ data: createChatDto });
@@ -24,20 +24,45 @@ export class ChatService {
       where: {
         id,
       },
-    });
+    })
+  }
+
+  async findForm(chat: bigint) {
+    const forbiddenChat = await this.dbService.reaction.findMany({
+      select: {
+        to: true
+      }, where: {
+        from: chat
+      }
+    })
+    return JSON.parse(
+      JSON.stringify(await this.dbService.chat.findMany({
+        take: 1,
+        where: {
+          chat: {
+            notIn: forbiddenChat.map(item => item.to)
+          },
+          status: 1,
+        }
+      }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
   }
 
   async findByChatId(chat: bigint) {
+    console.log(chat)
+    const result = await this.dbService.chat.findUnique({
+      where: {
+        chat,
+      },
+    })
     return JSON.parse(
       JSON.stringify(
-        await this.dbService.chat.findUnique({
-          where: {
-            chat,
-          },
-        }),
+        result,
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
-    );
+    )
   }
 
   async findByReferal(id: string) {
@@ -50,7 +75,7 @@ export class ChatService {
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
-    );
+    )
   }
 
   async countByReferal(id: string) {
@@ -58,7 +83,7 @@ export class ChatService {
       where: {
         ref: id,
       },
-    });
+    })
   }
 
   async update(chat: bigint, updateChatDto: Prisma.chatUpdateInput) {
@@ -72,7 +97,23 @@ export class ChatService {
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
-    );
+    )
+  }
+
+  async uploadFile(chat: bigint, file: Express.Multer.File) {
+    return JSON.parse(
+      JSON.stringify(
+        await this.dbService.chat.update({
+          where: {
+            chat,
+          },
+          data: {
+            img1: file.buffer.toString(),
+          },
+        }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
   }
 
   async verificationExistence(from: UserInterface) {
@@ -116,6 +157,6 @@ export class ChatService {
       where: {
         id,
       },
-    });
+    })
   }
 }

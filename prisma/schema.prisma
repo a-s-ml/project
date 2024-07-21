@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
 }
 
 datasource db {
@@ -8,12 +9,70 @@ datasource db {
 }
 
 model chat {
-  id       Int      @id @unique(map: "unique_id") @default(autoincrement())
-  id_str   String   @unique(map: "unique_idstr") @db.VarChar(255)
-  chat     BigInt   @unique(map: "unique_chat")
-  type     String   @default("1") @db.VarChar(255)
-  bot      Int?     @default(0)
-  date     DateTime @default(now()) @db.Timestamp(0)
+  id       Int       @id @unique(map: "unique_id") @default(autoincrement())
+  id_str   String    @unique(map: "unique_idstr") @db.VarChar(255)
+  chat     BigInt    @unique(map: "unique_chat")
+  type     String    @default("1") @db.VarChar(255)
+  bot      Int?      @default(0)
+  date     DateTime  @default(now()) @db.Timestamp(0)
   dateUnix Int
-  ref      String?  @db.VarChar(255)
+  ref      String?   @db.VarChar(255)
+  img1     String?   @db.Text
+  img2     String?   @db.Text
+  img3     String?   @db.Text
+  city     Int?      @default(1)
+  gender   Int?
+  status   Int       @default(0)
+  name     String?   @db.VarChar(255)
+  about    String?   @db.VarChar(255)
+  find     Int       @default(3)
+  birthday DateTime? @default(dbgenerated("'2002-01-01 00:00:00'")) @db.Timestamp(0)
+}
+
+model complaints {
+  id       Int      @id @default(autoincrement())
+  type     Int
+  to       BigInt
+  from     BigInt
+  date     DateTime @default(now()) @db.Timestamp(0)
+  dateUnix Int?
+}
+
+model complaints_type {
+  id     Int     @id @default(autoincrement())
+  active Int?
+  name   String? @db.VarChar(255)
+}
+
+model cities {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+
+  @@fulltext([name])
+}
+
+model find_type {
+  id     Int     @id @default(autoincrement())
+  active Int?
+  name   String? @db.VarChar(255)
+}
+
+model genders_type {
+  id     Int     @id @default(autoincrement())
+  active Int?
+  name   String? @db.VarChar(255)
+}
+
+model status_chat_type {
+  id          Int     @id @unique(map: "id") @default(autoincrement())
+  name        String? @db.VarChar(255)
+  description String? @db.VarChar(255)
+}
+
+model reaction {
+  id   Int       @id @unique(map: "id") @default(autoincrement())
+  from BigInt?
+  to   BigInt?
+  type Int?
+  date DateTime? @default(now()) @db.Timestamp(0)
 }

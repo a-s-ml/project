@@ -17,7 +17,6 @@ export class ValidateService {
 
   async validateUser(initData: string) {
     const urlParams = new URLSearchParams(initData);
-    const setbot = urlParams.get('setbot');
     const hash = urlParams.get('hash');
     urlParams.delete('hash');
     urlParams.sort();
@@ -34,17 +33,8 @@ export class ValidateService {
     }
     dataCheckString = dataCheckString.slice(0, -1);
 
-    let tokenBot: string;
-
-    if (setbot == "HAMSTER") {
-      tokenBot = process.env.HAMSTER
-    }
-    if (setbot == "MINESWEEPER") {
-      tokenBot = process.env.MINESWEEPER
-    }
-
     const secret = createHmac('sha256', 'WebAppData').update(
-      tokenBot ?? '',
+      process.env.TOKEN ?? '',
     );
 
     const calculatedHash = createHmac('sha256', secret.digest())
@@ -55,7 +45,9 @@ export class ValidateService {
 
     let response: responseValidateInterface;
 
-    if (validate) {
+    const check = await this.chatService.findByChatId(UserData.user.id)
+
+    if (validate && !check) {
       return await this.chatService.createChat({
         bot: 0,
         chat: UserData.user.id,
@@ -66,13 +58,15 @@ export class ValidateService {
       });
     }
 
-    const event = new EventInterface();
-    event.name = 'webAppValidate';
-    event.bot = setbot;
-    event.description = `BOT: ${setbot}\nchat: #id${UserData.user.id}\nvalidate: #${String(
-      validate,
-    )}\nusername: @${UserData.user.username}\nfirst_name: ${UserData.user.first_name}\nlast_name: ${UserData.user.last_name}\nlanguage_code: #${UserData.user.language_code}`;
-    this.eventEmitter.emit('event', event);
+    if (UserData.user.first_name !== "more_details") {
+      const event = new EventInterface();
+      event.name = 'webAppValidate';
+      event.description = `chat: #id${UserData.user.id}\nvalidate: #${String(
+        validate,
+      )}\nusername: @${UserData.user.username}\nfirst_name: #${UserData.user.first_name}\nlast_name: #${UserData.user.last_name}\nlanguage_code: #${UserData.user.language_code}`;
+      this.eventEmitter.emit('eventAuth', event);
+    }
+
 
     return (response = { validate, UserData });
   }

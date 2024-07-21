@@ -7,19 +7,13 @@ import { EventInterface } from "src/chat/models/events.interface"
 @Injectable()
 export class LogAdminService {
 	@OnEvent("event")
-	async handleOrderCreatedEvent(event: EventInterface) {
-		let tokenBot: string;
-		if (event.bot == "HAMSTER") {
-			tokenBot = process.env.HAMSTER
-		}
-		if (event.bot == "MINESWEEPER") {
-			tokenBot = process.env.MINESWEEPER
-		}
+	async eventAll(event: EventInterface) {
 		try {
 			await axios.get(
 				`
-				https://api.telegram.org/bot${tokenBot}/sendMessage?
-				chat_id=5949135498
+				${process.env.SEND_MESSAGE}
+				chat_id=${process.env.ADMINCHANNELID}
+				&message_thread_id=11
 				&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}
 				&disable_web_page_preview=true
 				&parse_mode=HTML
@@ -28,13 +22,30 @@ export class LogAdminService {
 		} catch (error) { }
 	}
 
-	@OnEvent("eventPost")
-	async eventPost(event: EventInterface) {
+	@OnEvent("eventAuth")
+	async eventAuth(event: EventInterface) {
 		try {
 			await axios.get(
 				`
 				${process.env.SEND_MESSAGE}
-				chat_id=5949135498
+				chat_id=${process.env.ADMINCHANNELID}
+				&message_thread_id=3
+				&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}
+				&disable_web_page_preview=true
+				&parse_mode=HTML
+				`
+			)
+		} catch (error) { }
+	}
+
+	@OnEvent("eventPrifile")
+	async eventPrifile(event: EventInterface) {
+		try {
+			await axios.get(
+				`
+				${process.env.SEND_MESSAGE}
+				chat_id=${process.env.ADMINCHANNELID}
+				&message_thread_id=5
 				&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}
 				&disable_web_page_preview=true
 				&parse_mode=HTML
