@@ -8,7 +8,7 @@ export class ComplaintsTypeService {
     async findAll() {
 		return await this.dbService.complaints_type.findMany({
 			orderBy: {
-				name: "asc"
+				id: "asc"
 			}
 		})
 	}

@@ -17,16 +17,16 @@ model chat {
   date     DateTime  @default(now()) @db.Timestamp(0)
   dateUnix Int
   ref      String?   @db.VarChar(255)
-  img1     String?   @db.Text
-  img2     String?   @db.Text
-  img3     String?   @db.Text
+  img1     String?   @db.LongText
+  img2     String?   @db.LongText
+  img3     String?   @db.LongText
   city     Int?      @default(1)
   gender   Int?
   status   Int       @default(0)
   name     String?   @db.VarChar(255)
   about    String?   @db.VarChar(255)
   find     Int       @default(3)
-  birthday DateTime? @default(dbgenerated("'2002-01-01 00:00:00'")) @db.Timestamp(0)
+  birthday DateTime? @db.Timestamp(0)
 }
 
 model complaints {

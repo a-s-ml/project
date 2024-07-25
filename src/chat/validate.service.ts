@@ -68,6 +68,7 @@ export class ValidateService {
     }
 
 
+    console.log(validate)
     return (response = { validate, UserData });
   }
 }

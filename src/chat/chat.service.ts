@@ -6,6 +6,7 @@ import { UserInterface } from 'src/interfaces/types/User.interface';
 import { GetTgService } from 'src/responses/getTgAPI.service';
 import { EventInterface } from './models/events.interface';
 import { v4 as uuidv4 } from 'uuid';
+import { InlineKeyboardMarkupInterface } from 'src/interfaces/types/InlineKeyboardMarkup.interface';
 
 @Injectable()
 export class ChatService {
@@ -16,7 +17,12 @@ export class ChatService {
   ) { }
 
   async createChat(createChatDto: Prisma.chatCreateInput) {
-    return await this.dbService.chat.create({ data: createChatDto });
+    return JSON.parse(
+      JSON.stringify(
+        await this.dbService.chat.create({ data: createChatDto }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
   }
 
   async findById(id: number) {
@@ -27,14 +33,27 @@ export class ChatService {
     })
   }
 
-  async findForm(chat: bigint) {
-    const forbiddenChat = await this.dbService.reaction.findMany({
+  async findForm(chat: bigint, age: string) {
+    const current1 = new Date()
+    const to = current1.setFullYear(current1.getFullYear() - parseInt(age.substring(0, 2)));
+    const current2 = new Date()
+    const from = current2.setFullYear(current2.getFullYear() - parseInt(age.substring(2, 4)));
+    const reactionChat = await this.dbService.reaction.findMany({
       select: {
         to: true
       }, where: {
         from: chat
       }
     })
+    const complaintChat = await this.dbService.complaints.findMany({
+      select: {
+        to: true
+      }, where: {
+        from: chat
+      }
+    })
+    const forbiddenChat = reactionChat.concat(complaintChat)
+    forbiddenChat.push({ to: chat as bigint })
     return JSON.parse(
       JSON.stringify(await this.dbService.chat.findMany({
         take: 1,
@@ -42,7 +61,11 @@ export class ChatService {
           chat: {
             notIn: forbiddenChat.map(item => item.to)
           },
-          status: 1,
+          birthday: {
+            gte: new Date(from),
+            lte: new Date(to)
+          },
+          status: 2,
         }
       }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
@@ -50,8 +73,42 @@ export class ChatService {
     )
   }
 
+
+  async countChatByAge(chat: bigint, age: string) {
+    const current1 = new Date()
+    const to = current1.setFullYear(current1.getFullYear() - parseInt(age.substring(0, 2)));
+    const current2 = new Date()
+    const from = current2.setFullYear(current2.getFullYear() - parseInt(age.substring(2, 4)));
+    const reactionChat = await this.dbService.reaction.findMany({
+      select: {
+        to: true
+      }, where: {
+        from: chat
+      }
+    })
+    const complaintChat = await this.dbService.complaints.findMany({
+      select: {
+        to: true
+      }, where: {
+        from: chat
+      }
+    })
+    const forbiddenChat = reactionChat.concat(complaintChat)
+    return await this.dbService.chat.count({
+      where: {
+        chat: {
+          notIn: forbiddenChat.map(item => item.to)
+        },
+        birthday: {
+          gte: new Date(from),
+          lte: new Date(to)
+        },
+        status: 2
+      }
+    });
+  }
+
   async findByChatId(chat: bigint) {
-    console.log(chat)
     const result = await this.dbService.chat.findUnique({
       where: {
         chat,
@@ -98,9 +155,31 @@ export class ChatService {
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
+    const replyMarkup: InlineKeyboardMarkupInterface = {
+      inline_keyboard: [
+        [
+          {
+            text: 'Да',
+            url: `https://api80q.ru/dating/chat/moderateOK/${chat}`,
+          },
+          {
+            text: 'Блок',
+            url: `https://api80q.ru/dating/chat/moderateBlock/${chat}`,
+          },
+        ],
+      ],
+    };
+    const event = new EventInterface();
+    event.name = 'profile';
+    event.description = `${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&text=${encodeURIComponent(`#${event.name}\nПользователь #id${chat} изменение анкеты\n\n${JSON.stringify(updateChatDto)}`)}&reply_markup=${JSON.stringify(replyMarkup)}&disable_web_page_preview=true&parse_mode=HTML`;
+    this.eventEmitter.emit('profile', event);
   }
 
-  async uploadFile(chat: bigint, file: Express.Multer.File) {
+  async moderate(chat: bigint, mod: number) {
+    const event = new EventInterface();
+    event.name = 'moderate';
+    event.description = `Модерация аекеты пользователя #id${chat}\nСтатус :${mod}`;
+    this.eventEmitter.emit('moderate', event);
     return JSON.parse(
       JSON.stringify(
         await this.dbService.chat.update({
@@ -108,12 +187,113 @@ export class ChatService {
             chat,
           },
           data: {
-            img1: file.buffer.toString(),
-          },
+            status: mod
+          }
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
+  }
+
+  async uploadFile(chat: bigint, file: Express.Multer.File | null, id: number) {
+    console.log('chat update', chat)
+    console.log('id update', id)
+    console.log('file update', file)
+    if (id === 0) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img1: Buffer.from(file.buffer).toString('base64')
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+    if (id === 1) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img2: Buffer.from(file.buffer).toString('base64')
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+    if (id === 2) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img3: Buffer.from(file.buffer).toString('base64')
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+  }
+
+  async deleteFile(chat: bigint, id: number) {
+    console.log('del chat', chat)
+    console.log('del id', id)
+    if (id === 0) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img1: null
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+    if (id === 1) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img2: null
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+    if (id === 2) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: {
+              img3: null
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
   }
 
   async verificationExistence(from: UserInterface) {
@@ -158,5 +338,37 @@ export class ChatService {
         id,
       },
     })
+  }
+
+  async moderateOK(chat: bigint) {
+    return JSON.parse(
+      JSON.stringify(
+        await this.dbService.chat.update({
+          where: {
+            chat,
+          },
+          data: {
+            status: 2
+          },
+        }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
+  }
+
+  async moderateBlock(chat: bigint) {
+    return JSON.parse(
+      JSON.stringify(
+        await this.dbService.chat.update({
+          where: {
+            chat,
+          },
+          data: {
+            status: 4
+          },
+        }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
   }
 }
