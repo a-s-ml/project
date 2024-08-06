@@ -7,6 +7,7 @@ import { GetTgService } from 'src/responses/getTgAPI.service';
 import { EventInterface } from './models/events.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { InlineKeyboardMarkupInterface } from 'src/interfaces/types/InlineKeyboardMarkup.interface';
+import { ProfileChangeTypeReq } from './models/newModel';
 
 @Injectable()
 export class ChatService {
@@ -144,17 +145,6 @@ export class ChatService {
   }
 
   async update(chat: bigint, updateChatDto: Prisma.chatUpdateInput) {
-    return JSON.parse(
-      JSON.stringify(
-        await this.dbService.chat.update({
-          where: {
-            chat,
-          },
-          data: updateChatDto,
-        }),
-        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-      ),
-    )
     const replyMarkup: InlineKeyboardMarkupInterface = {
       inline_keyboard: [
         [
@@ -173,6 +163,17 @@ export class ChatService {
     event.name = 'profile';
     event.description = `${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&text=${encodeURIComponent(`#${event.name}\nПользователь #id${chat} изменение анкеты\n\n${JSON.stringify(updateChatDto)}`)}&reply_markup=${JSON.stringify(replyMarkup)}&disable_web_page_preview=true&parse_mode=HTML`;
     this.eventEmitter.emit('profile', event);
+    return JSON.parse(
+      JSON.stringify(
+        await this.dbService.chat.update({
+          where: {
+            chat,
+          },
+          data: updateChatDto,
+        }),
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+      ),
+    )
   }
 
   async moderate(chat: bigint, mod: number) {
@@ -195,7 +196,12 @@ export class ChatService {
     )
   }
 
-  async uploadFile(chat: bigint, file: Express.Multer.File | null, id: number) {
+  async uploadFile(chat: bigint, file: (Express.Multer.File | null)[]) {
+    console.log('chat update', chat)
+    console.log('file update', file)
+  }
+
+  async uploadFile2(chat: bigint, file: Express.Multer.File | null, id: number) {
     console.log('chat update', chat)
     console.log('id update', id)
     console.log('file update', file)
@@ -370,5 +376,10 @@ export class ChatService {
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
+  }
+
+  async change(chat: bigint, body: any) {
+    console.log('chat update', chat)
+    console.log('body update', body)
   }
 }

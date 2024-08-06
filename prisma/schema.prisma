@@ -76,3 +76,31 @@ model reaction {
   type Int?
   date DateTime? @default(now()) @db.Timestamp(0)
 }
+
+model interests {
+  id   Int     @id @default(autoincrement())
+  type Int
+  name String? @db.VarChar(255)
+  img  Int?    @default(128054)
+}
+
+model interests_type {
+  id   Int     @id @unique(map: "id") @default(autoincrement())
+  name String? @db.VarChar(255)
+}
+
+model privat_type {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+}
+
+model target_type {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+}
+
+model privatePr {
+  id   Int     @id @default(autoincrement())
+  type Int?
+  name String? @db.VarChar(255)
+}

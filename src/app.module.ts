@@ -13,6 +13,11 @@ import { GendersTypeModule } from './genders-type/genders-type.module';
 import { FindTypeModule } from './find-type/find-type.module';
 import { CitiesModule } from './cities/cities.module';
 import { ReactionModule } from './reaction/reaction.module';
+import { InterestsTypeModule } from './interests-type/interests-type.module';
+import { InterestsModule } from './interests/interests.module';
+import { PrivateModule } from './private/private.module';
+import { PrivateTypeModule } from './private-type/private-type.module';
+import { TargetTypeModule } from './target-type/target-type.module';
 
 @Module({
   imports: [
@@ -23,9 +28,14 @@ import { ReactionModule } from './reaction/reaction.module';
     ChatModule,
     ComplaintsModule,
     ComplaintsTypeModule,
+    InterestsTypeModule,
+    InterestsModule,
     GendersTypeModule,
     FindTypeModule,
     CitiesModule,
+    PrivateModule,
+    PrivateTypeModule,
+    TargetTypeModule,
     ReactionModule
   ],
   controllers: [AppController],

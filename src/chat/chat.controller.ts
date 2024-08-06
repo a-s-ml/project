@@ -1,8 +1,9 @@
-import { Controller, Body, Patch, Param, Get, Header, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Body, Patch, Param, Get, Header, Post, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Prisma } from '@prisma/client';
 import { ValidateService } from './validate.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { ProfileChangeTypeReq, ProfileChangeTypeRes } from './models/newModel';
 
 @Controller('chat')
 export class ChatController {
@@ -75,23 +76,46 @@ export class ChatController {
     return this.chatService.update(chat as unknown as bigint, updateChatDto);
   }
 
-  @Post('upload/:chat/:id')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
+  @Post('change/:chat')
+  change(
     @Param('chat') chat: string,
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File
+    @Body() data: ProfileChangeTypeRes
   ) {
-    return this.chatService.uploadFile(chat as unknown as bigint, file, +id);
+    console.log('_______');
+    console.log('chat', chat);
+    console.log('data', data);
   }
 
-  @Post('deleteFile/:chat/:id')
-  @UseInterceptors(FileInterceptor('file'))
-  deleteFile(
+  @Post('changeall/:chat')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'img0', maxCount: 1 },
+    { name: 'img1', maxCount: 1 },
+    { name: 'img2', maxCount: 1 },
+  ]))
+  changeall(
     @Param('chat') chat: string,
-    @Param('id') id: string,
+    @Body() data: ProfileChangeTypeRes,
+    @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
   ) {
-    return this.chatService.deleteFile(chat as unknown as bigint, +id);
+    console.log('_______');
+    console.log('chat', chat);
+    console.log('data', data);
+    console.log('images', images);
+  }
+
+  @Post('upload/:chat')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'img0', maxCount: 1 },
+    { name: 'img1', maxCount: 1 },
+    { name: 'img2', maxCount: 1 },
+  ]))
+  uploadFile(
+    @Param('chat') chat: string,
+    @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
+  ) {
+    console.log('_______');
+    console.log('chat', chat);
+    console.log('images', images);
   }
 
   @Get('moderateOK/:chat')
