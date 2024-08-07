@@ -7,7 +7,9 @@ import { GetTgService } from 'src/responses/getTgAPI.service';
 import { EventInterface } from './models/events.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { InlineKeyboardMarkupInterface } from 'src/interfaces/types/InlineKeyboardMarkup.interface';
-import { ProfileChangeTypeReq } from './models/newModel';
+import { ChatPrivateService } from 'src/chat-private/chat-private.service';
+import { ProfileTypeRes } from './models/newModel';
+import { ChatInterestsService } from 'src/chat-interests/chat-interests.service';
 
 @Injectable()
 export class ChatService {
@@ -15,9 +17,12 @@ export class ChatService {
     private dbService: DbService,
     private getTgService: GetTgService,
     private eventEmitter: EventEmitter2,
+    private сhatPrivateService: ChatPrivateService,
+    private chatInterestsService: ChatInterestsService
   ) { }
 
   async createChat(createChatDto: Prisma.chatCreateInput) {
+    await this.сhatPrivateService.addDefaultPrivate(createChatDto.chat as bigint)
     return JSON.parse(
       JSON.stringify(
         await this.dbService.chat.create({ data: createChatDto }),
@@ -34,87 +39,21 @@ export class ChatService {
     })
   }
 
-  async findForm(chat: bigint, age: string) {
-    const current1 = new Date()
-    const to = current1.setFullYear(current1.getFullYear() - parseInt(age.substring(0, 2)));
-    const current2 = new Date()
-    const from = current2.setFullYear(current2.getFullYear() - parseInt(age.substring(2, 4)));
-    const reactionChat = await this.dbService.reaction.findMany({
-      select: {
-        to: true
-      }, where: {
-        from: chat
-      }
-    })
-    const complaintChat = await this.dbService.complaints.findMany({
-      select: {
-        to: true
-      }, where: {
-        from: chat
-      }
-    })
-    const forbiddenChat = reactionChat.concat(complaintChat)
-    forbiddenChat.push({ to: chat as bigint })
+  async findByChatId(chat: bigint) {
     return JSON.parse(
-      JSON.stringify(await this.dbService.chat.findMany({
-        take: 1,
-        where: {
-          chat: {
-            notIn: forbiddenChat.map(item => item.to)
+      JSON.stringify(
+        await this.dbService.chat.findUnique({
+          where: {
+            chat,
           },
-          birthday: {
-            gte: new Date(from),
-            lte: new Date(to)
-          },
-          status: 2,
-        }
-      }),
+        }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
   }
 
-
-  async countChatByAge(chat: bigint, age: string) {
-    const current1 = new Date()
-    const to = current1.setFullYear(current1.getFullYear() - parseInt(age.substring(0, 2)));
-    const current2 = new Date()
-    const from = current2.setFullYear(current2.getFullYear() - parseInt(age.substring(2, 4)));
-    const reactionChat = await this.dbService.reaction.findMany({
-      select: {
-        to: true
-      }, where: {
-        from: chat
-      }
-    })
-    const complaintChat = await this.dbService.complaints.findMany({
-      select: {
-        to: true
-      }, where: {
-        from: chat
-      }
-    })
-    const forbiddenChat = reactionChat.concat(complaintChat)
-    return await this.dbService.chat.count({
-      where: {
-        chat: {
-          notIn: forbiddenChat.map(item => item.to)
-        },
-        birthday: {
-          gte: new Date(from),
-          lte: new Date(to)
-        },
-        status: 2
-      }
-    });
-  }
-
-  async findByChatId(chat: bigint) {
-    const result = await this.dbService.chat.findUnique({
-      where: {
-        chat,
-      },
-    })
+  async InfoByChatId(chat: bigint) {
+    const result = await this.createResponseFrontend(chat)
     return JSON.parse(
       JSON.stringify(
         result,
@@ -252,56 +191,6 @@ export class ChatService {
     }
   }
 
-  async deleteFile(chat: bigint, id: number) {
-    console.log('del chat', chat)
-    console.log('del id', id)
-    if (id === 0) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img1: null
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
-    if (id === 1) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img2: null
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
-    if (id === 2) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img3: null
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
-  }
-
   async verificationExistence(from: UserInterface) {
     const checkUser = await this.findByChatId(from.id);
     if (!checkUser) {
@@ -381,5 +270,26 @@ export class ChatService {
   async change(chat: bigint, body: any) {
     console.log('chat update', chat)
     console.log('body update', body)
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  async createResponseFrontend(chat: bigint) {
+    const result = await this.findByChatId(chat)
+    const interestsProfile = await this.chatInterestsService.findByChatId(chat)
+    const privateProfile = await this.сhatPrivateService.findByChatId(chat)
+    let interests: number[] = []
+    let responseFrontend: ProfileTypeRes
+    return responseFrontend = { ...result, interests: interestsProfile.map((item) => interests.push(item.interest_id)), private: privateProfile }
   }
 }

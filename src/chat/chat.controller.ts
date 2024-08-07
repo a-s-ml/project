@@ -2,8 +2,8 @@ import { Controller, Body, Patch, Param, Get, Header, Post, UploadedFile, UseInt
 import { ChatService } from './chat.service';
 import { Prisma } from '@prisma/client';
 import { ValidateService } from './validate.service';
-import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ProfileChangeTypeReq, ProfileChangeTypeRes } from './models/newModel';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ProfileChangeTypeRes } from './models/newModel';
 
 @Controller('chat')
 export class ChatController {
@@ -37,12 +37,9 @@ export class ChatController {
     return this.chatService.findByChatId(chat as unknown as bigint);
   }
 
-  @Get('find/:chat/:age')
-  findForm(
-    @Param('chat') chat: string,
-    @Param('age') age: string,
-  ) {
-    return this.chatService.findForm(chat as unknown as bigint, age);
+  @Get('InfoByChatId/:chat')
+  InfoByChatId(@Param('chat') chat: string) {
+    return this.chatService.InfoByChatId(chat as unknown as bigint);
   }
 
   @Get('tgGetFilePhoto/:unic_id')
@@ -50,14 +47,6 @@ export class ChatController {
   async tgGetFilePhoto(@Param('unic_id') unic_id: string) {
     const response = await this.chatService.tgGetFilePhoto(unic_id);
     return response;
-  }
-
-  @Get('countChatByAge/:chat/:age')
-  countChatByAge(
-    @Param('chat') chat: string,
-    @Param('age') age: string,
-  ) {
-    return this.chatService.countChatByAge(chat as unknown as bigint, age);
   }
 
   @Get('moderate/:chat/:mod')
@@ -81,26 +70,8 @@ export class ChatController {
     @Param('chat') chat: string,
     @Body() data: ProfileChangeTypeRes
   ) {
-    console.log('_______');
     console.log('chat', chat);
     console.log('data', data);
-  }
-
-  @Post('changeall/:chat')
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'img0', maxCount: 1 },
-    { name: 'img1', maxCount: 1 },
-    { name: 'img2', maxCount: 1 },
-  ]))
-  changeall(
-    @Param('chat') chat: string,
-    @Body() data: ProfileChangeTypeRes,
-    @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
-  ) {
-    console.log('_______');
-    console.log('chat', chat);
-    console.log('data', data);
-    console.log('images', images);
   }
 
   @Post('upload/:chat')
@@ -113,7 +84,6 @@ export class ChatController {
     @Param('chat') chat: string,
     @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
   ) {
-    console.log('_______');
     console.log('chat', chat);
     console.log('images', images);
   }

@@ -5,5 +5,8 @@ export class responseUserInterface {
     username: string;
     language_code: string;
     allows_write_to_pm: boolean;
+    chat_instance: bigint;
+    chat_type: string;
+    auth_date: number;
 } 
 

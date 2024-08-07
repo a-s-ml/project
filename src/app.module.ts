@@ -18,6 +18,8 @@ import { InterestsModule } from './interests/interests.module';
 import { PrivateModule } from './private/private.module';
 import { PrivateTypeModule } from './private-type/private-type.module';
 import { TargetTypeModule } from './target-type/target-type.module';
+import { ChatInterestsModule } from './chat-interests/chat-interests.module';
+import { ChatPrivateModule } from './chat-private/chat-private.module';
 
 @Module({
   imports: [
@@ -36,7 +38,7 @@ import { TargetTypeModule } from './target-type/target-type.module';
     PrivateModule,
     PrivateTypeModule,
     TargetTypeModule,
-    ReactionModule
+    ReactionModule, ChatPrivateModule, ChatInterestsModule
   ],
   controllers: [AppController],
   providers: [AppService, LogAdminService],

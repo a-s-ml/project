@@ -49,11 +49,11 @@ export class ValidateService {
 
     if (validate && !check) {
       return await this.chatService.createChat({
-        bot: 0,
+        type: UserData.user.chat_type,
         chat: UserData.user.id,
-        type: '',
+        status: 1,
         ref: UserData.query_id,
-        id_str: uuidv4().replace("-", ""),
+        id_str: uuidv4(),
         dateUnix: Math.floor(new Date().getTime() / 1000)
       });
     }
