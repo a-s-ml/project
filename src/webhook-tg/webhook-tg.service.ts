@@ -17,5 +17,8 @@ export class WebhookTgService {
 		if (updateDto.my_chat_member) {
 			return this.callbackQueryService.member(updateDto.my_chat_member)
 		}
+		if (updateDto.pre_checkout_query) {
+			return this.callbackQueryService.preCheckoutQuery(updateDto.pre_checkout_query)
+		}
 	}
 }

@@ -7,6 +7,7 @@ import { InlineKeyboardMarkupInterface } from 'src/interfaces/types/InlineKeyboa
 import { ResponsesService } from 'src/responses/responses.service';
 import { EventInterface } from 'src/chat/models/events.interface';
 import { ChatMemberUpdatedInterface } from 'src/interfaces/types/ChatMemberUpdated.interface';
+import { PreCheckoutQueryInterface } from 'src/interfaces/types/PreCheckoutQuery.interface';
 
 @Injectable()
 export class CallbackQueryService {
@@ -77,4 +78,12 @@ export class CallbackQueryService {
 			this.eventEmitter.emit('event', event);
 		}
 	}
+
+  async preCheckoutQuery(checkoutQuery: PreCheckoutQueryInterface) {
+		console.log(checkoutQuery)
+    await fetch(
+      `https://api.telegram.org/bot7497646971:AAF0QU-t2xNFk0OXWjRilX8ZqIMzjdRiKo8/answerPreCheckoutQuery?pre_checkout_query_id=${checkoutQuery.id}&ok=true`
+    )
+	}
+
 }

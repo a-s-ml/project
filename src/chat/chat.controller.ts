@@ -3,7 +3,7 @@ import { ChatService } from './chat.service';
 import { Prisma } from '@prisma/client';
 import { ValidateService } from './validate.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ProfileChangeTypeRes } from './models/newModel';
+import { ProfileChangeTypeRes, ProfileTypeRes } from './models/newModel';
 
 @Controller('chat')
 export class ChatController {
@@ -49,29 +49,12 @@ export class ChatController {
     return response;
   }
 
-  @Get('moderate/:chat/:mod')
-  moderate(
-    @Param('chat') chat: string,
-    @Param('mod') mod: string,
-  ) {
-    return this.chatService.moderate(chat as unknown as bigint, +mod);
-  }
-
-  @Patch(':chat')
+  @Patch('change/:chat')
   update(
     @Param('chat') chat: string,
-    @Body() updateChatDto: Prisma.chatUpdateInput,
+    @Body() updateChatDto: ProfileTypeRes,
   ) {
     return this.chatService.update(chat as unknown as bigint, updateChatDto);
-  }
-
-  @Post('change/:chat')
-  change(
-    @Param('chat') chat: string,
-    @Body() data: ProfileChangeTypeRes
-  ) {
-    console.log('chat', chat);
-    console.log('data', data);
   }
 
   @Post('upload/:chat')
@@ -82,24 +65,9 @@ export class ChatController {
   ]))
   uploadFile(
     @Param('chat') chat: string,
-    @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
+    @UploadedFiles() images: { img0?: Express.Multer.File, img1?: Express.Multer.File, img2?: Express.Multer.File },
   ) {
-    console.log('chat', chat);
-    console.log('images', images);
-  }
-
-  @Get('moderateOK/:chat')
-  moderateOK(
-    @Param('chat') chat: string,
-  ) {
-    return this.chatService.moderateOK(chat as unknown as bigint);
-  }
-
-  @Get('moderateBlock/:chat')
-  moderateBlock(
-    @Param('chat') chat: string,
-  ) {
-    return this.chatService.moderateBlock(chat as unknown as bigint);
+    return this.chatService.uploadFile(chat as unknown as bigint, images);
   }
 }
 

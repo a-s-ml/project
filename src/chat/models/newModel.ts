@@ -4,7 +4,7 @@ export type ProfileChangeTypeRes = {
     education: string,
     work: string,
     private: PrivateStateInterface[],
-    interests: number[]
+    interests: InterestsStateInterface[]
 }
 
 export type ProfileChangeTypeReq = {
@@ -22,28 +22,22 @@ export interface PrivateStateInterface {
     value: number
 }
 
+export interface InterestsStateInterface {
+    interest_id: number
+}
+
 export interface ProfileTypeRes {
     id: number,
-    id_str: string,
-    chat: bigint,
-    type: string,
-    bot: number,
-    date: Date,
-    dateUnix: number,
-    ref: string,
-    img1: string | ArrayBuffer | null,
-    img2: string | ArrayBuffer | null,
-    img3: string | ArrayBuffer | null,
     city: number,
     gender: number,
     status: number,
     name: string,
     about: string,
     find: number,
-    birthday: Date,
+    birthday: number,
     target: number,
     work: string,
     education: string,
     private: PrivateStateInterface[],
-    interests: number[]
+    interests: InterestsStateInterface[]
 }

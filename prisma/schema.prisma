@@ -9,27 +9,27 @@ datasource db {
 }
 
 model chat {
-  id        Int       @id @unique(map: "unique_id") @default(autoincrement())
-  id_str    String    @unique(map: "unique_idstr") @db.VarChar(255)
-  chat      BigInt    @unique(map: "unique_chat")
-  type      String    @default("1") @db.VarChar(255)
-  bot       Int?      @default(0)
-  date      DateTime  @default(now()) @db.Timestamp(0)
+  id        Int      @id @unique(map: "unique_id") @default(autoincrement())
+  id_str    String   @unique(map: "unique_idstr") @db.VarChar(255)
+  chat      BigInt   @unique(map: "unique_chat")
+  type      String   @default("1") @db.VarChar(255)
+  bot       Int?     @default(0)
+  date      DateTime @default(now()) @db.Timestamp(0)
   dateUnix  Int
-  ref       String?   @db.VarChar(255)
-  img1      String?   @db.LongText
-  img2      String?   @db.LongText
-  img3      String?   @db.LongText
-  city      Int?      @default(1)
+  ref       String?  @db.VarChar(255)
+  img1      String?  @db.LongText
+  img2      String?  @db.LongText
+  img3      String?  @db.LongText
+  city      Int?     @default(1)
   gender    Int?
-  status    Int       @default(0)
-  name      String?   @db.VarChar(255)
-  about     String?   @db.VarChar(255)
-  find      Int       @default(3)
-  birthday  DateTime? @db.Timestamp(0)
+  status    Int      @default(1)
+  name      String?  @db.VarChar(255)
+  about     String?  @db.VarChar(255)
+  find      Int      @default(3)
+  birthday  Int?
   target    Int?
-  work      String?   @db.VarChar(255)
-  education String?   @db.VarChar(255)
+  work      String?  @db.VarChar(255)
+  education String?  @db.VarChar(255)
 }
 
 model complaints {
@@ -73,11 +73,12 @@ model status_chat_type {
 }
 
 model reaction {
-  id   Int       @id @unique(map: "id") @default(autoincrement())
-  from BigInt?
-  to   BigInt?
-  type Int?
-  date DateTime? @default(now()) @db.Timestamp(0)
+  id       Int       @id @unique(map: "id") @default(autoincrement())
+  from     BigInt?
+  to       BigInt?
+  type     Int?
+  date     DateTime? @default(now()) @db.Timestamp(0)
+  dateUnix Int?
 }
 
 model interests {

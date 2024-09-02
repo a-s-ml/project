@@ -29,53 +29,36 @@ export class LogAdminService {
 
 	@OnEvent("eventAuth")
 	async eventAuth(event: EventInterface) {
-		console.log(`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&message_thread_id=3&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`)
 		try {
 			await axios.get(
-				`
-				${process.env.SEND_MESSAGE}
-				chat_id=${process.env.ADMINCHANNELID}
-				&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}
-				&disable_web_page_preview=true
-				&parse_mode=HTML
-				`
+				`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&message_thread_id=39&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`
 			)
 		} catch (error) { }
 	}
 
-	@OnEvent("profile")
+	@OnEvent("newUser")
+	async newUser(event: EventInterface) {
+		try {
+			await axios.get(
+				`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&message_thread_id=42&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`
+			)
+		} catch (error) { }
+	}
+
+	@OnEvent("updateProfile")
 	async profile(event: EventInterface) {
-		try {
-			await axios.get(`${event.description}`)
-		} catch (error) { }
-	}
-
-	@OnEvent("moderate")
-	async moderate(event: EventInterface) {
+		console.log(`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&message_thread_id=44&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`)
 		try {
 			await axios.get(
 				`
 				${process.env.SEND_MESSAGE}
 				chat_id=${process.env.ADMINCHANNELID}
+				&message_thread_id=44
 				&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}
 				&disable_web_page_preview=true
 				&parse_mode=HTML
 				`
 			)
-		} catch (error) { }
-	}
-
-	@OnEvent("reactions")
-	async reactions(event: EventInterface) {
-		try {
-			await axios.get(`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`)
-		} catch (error) { }
-	}
-
-	@OnEvent("complaints")
-	async complaints(event: EventInterface) {
-		try {
-			await axios.get(`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`)
 		} catch (error) { }
 	}
 

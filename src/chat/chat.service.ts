@@ -6,7 +6,6 @@ import { UserInterface } from 'src/interfaces/types/User.interface';
 import { GetTgService } from 'src/responses/getTgAPI.service';
 import { EventInterface } from './models/events.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { InlineKeyboardMarkupInterface } from 'src/interfaces/types/InlineKeyboardMarkup.interface';
 import { ChatPrivateService } from 'src/chat-private/chat-private.service';
 import { ProfileTypeRes } from './models/newModel';
 import { ChatInterestsService } from 'src/chat-interests/chat-interests.service';
@@ -83,43 +82,38 @@ export class ChatService {
     })
   }
 
-  async update(chat: bigint, updateChatDto: Prisma.chatUpdateInput) {
-    const replyMarkup: InlineKeyboardMarkupInterface = {
-      inline_keyboard: [
-        [
-          {
-            text: 'Да',
-            url: `https://api80q.ru/dating/chat/moderateOK/${chat}`,
-          },
-          {
-            text: 'Блок',
-            url: `https://api80q.ru/dating/chat/moderateBlock/${chat}`,
-          },
-        ],
-      ],
-    };
+  async update(chat: bigint, updateChatDto: ProfileTypeRes) {
     const event = new EventInterface();
-    event.name = 'profile';
-    event.description = `${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&text=${encodeURIComponent(`#${event.name}\nПользователь #id${chat} изменение анкеты\n\n${JSON.stringify(updateChatDto)}`)}&reply_markup=${JSON.stringify(replyMarkup)}&disable_web_page_preview=true&parse_mode=HTML`;
-    this.eventEmitter.emit('profile', event);
+    event.name = 'updateProfile';
+    event.description = `chat: #id${chat}\ndata: ${JSON.stringify(updateChatDto)}`;
+    this.eventEmitter.emit('updateProfile', event);
+    console.log('updateChatDto', updateChatDto)
+    if (updateChatDto.interests) {
+      await this.chatInterestsService.removeInterestsByChatId(chat)
+      await this.chatInterestsService.addManyInterests(chat, updateChatDto.interests)
+      delete updateChatDto.interests
+    }
+    if (updateChatDto.private) {
+      await this.сhatPrivateService.removePrivateByChatId(chat)
+      await this.сhatPrivateService.addManyPrivate(chat, updateChatDto.private)
+      delete updateChatDto.private
+    }
     return JSON.parse(
       JSON.stringify(
         await this.dbService.chat.update({
           where: {
             chat,
           },
-          data: updateChatDto,
+          data: updateChatDto
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
   }
 
-  async moderate(chat: bigint, mod: number) {
-    const event = new EventInterface();
-    event.name = 'moderate';
-    event.description = `Модерация аекеты пользователя #id${chat}\nСтатус :${mod}`;
-    this.eventEmitter.emit('moderate', event);
+  async uploadFile(chat: bigint, images: { img0?: Express.Multer.File, img1?: Express.Multer.File, img2?: Express.Multer.File }) {
+    console.log(chat)
+    console.log(images)
     return JSON.parse(
       JSON.stringify(
         await this.dbService.chat.update({
@@ -127,68 +121,14 @@ export class ChatService {
             chat,
           },
           data: {
-            status: mod
-          }
+            img1: images.img0 ? Buffer.from(images.img0.buffer).toString('base64') : null,
+            img2: images.img1 ? Buffer.from(images.img1.buffer).toString('base64') : null,
+            img3: images.img2 ? Buffer.from(images.img2.buffer).toString('base64') : null
+          },
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
-  }
-
-  async uploadFile(chat: bigint, file: (Express.Multer.File | null)[]) {
-    console.log('chat update', chat)
-    console.log('file update', file)
-  }
-
-  async uploadFile2(chat: bigint, file: Express.Multer.File | null, id: number) {
-    console.log('chat update', chat)
-    console.log('id update', id)
-    console.log('file update', file)
-    if (id === 0) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img1: Buffer.from(file.buffer).toString('base64')
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
-    if (id === 1) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img2: Buffer.from(file.buffer).toString('base64')
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
-    if (id === 2) {
-      return JSON.parse(
-        JSON.stringify(
-          await this.dbService.chat.update({
-            where: {
-              chat,
-            },
-            data: {
-              img3: Buffer.from(file.buffer).toString('base64')
-            },
-          }),
-          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        ),
-      )
-    }
   }
 
   async verificationExistence(from: UserInterface) {
@@ -235,61 +175,11 @@ export class ChatService {
     })
   }
 
-  async moderateOK(chat: bigint) {
-    return JSON.parse(
-      JSON.stringify(
-        await this.dbService.chat.update({
-          where: {
-            chat,
-          },
-          data: {
-            status: 2
-          },
-        }),
-        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-      ),
-    )
-  }
-
-  async moderateBlock(chat: bigint) {
-    return JSON.parse(
-      JSON.stringify(
-        await this.dbService.chat.update({
-          where: {
-            chat,
-          },
-          data: {
-            status: 4
-          },
-        }),
-        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-      ),
-    )
-  }
-
-  async change(chat: bigint, body: any) {
-    console.log('chat update', chat)
-    console.log('body update', body)
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
   async createResponseFrontend(chat: bigint) {
     const result = await this.findByChatId(chat)
     const interestsProfile = await this.chatInterestsService.findByChatId(chat)
     const privateProfile = await this.сhatPrivateService.findByChatId(chat)
-    let interests: number[] = []
     let responseFrontend: ProfileTypeRes
-    return responseFrontend = { ...result, interests: interestsProfile.map((item) => interests.push(item.interest_id)), private: privateProfile }
+    return responseFrontend = { ...result, interests: interestsProfile, private: privateProfile }
   }
 }
