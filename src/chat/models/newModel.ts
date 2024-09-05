@@ -38,6 +38,9 @@ export interface ProfileTypeRes {
     target: number,
     work: string,
     education: string,
+    img1: string,
+    img2: string,
+    img3: string,
     private: PrivateStateInterface[],
     interests: InterestsStateInterface[]
 }

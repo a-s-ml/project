@@ -47,7 +47,6 @@ export class LogAdminService {
 
 	@OnEvent("updateProfile")
 	async profile(event: EventInterface) {
-		console.log(`${process.env.SEND_MESSAGE}chat_id=${process.env.ADMINCHANNELID}&message_thread_id=44&text=${encodeURIComponent(`#${event.name}\n${event.description}`)}&disable_web_page_preview=true&parse_mode=HTML`)
 		try {
 			await axios.get(
 				`

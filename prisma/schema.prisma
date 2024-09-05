@@ -113,6 +113,8 @@ model chat_interests {
   id          Int    @id @default(autoincrement())
   chat        BigInt
   interest_id Int
+
+  @@index([chat], map: "chat")
 }
 
 model chat_private {
@@ -120,4 +122,6 @@ model chat_private {
   chat  BigInt
   type  Int
   value Int
+
+  @@index([chat], map: "chat")
 }

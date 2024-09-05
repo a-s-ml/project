@@ -65,9 +65,23 @@ export class ChatController {
   ]))
   uploadFile(
     @Param('chat') chat: string,
-    @UploadedFiles() images: { img0?: Express.Multer.File, img1?: Express.Multer.File, img2?: Express.Multer.File },
+    @UploadedFiles() images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] },
   ) {
+    console.log(images)
     return this.chatService.uploadFile(chat as unknown as bigint, images);
+  }
+
+  @Get('status/:chat/:status')
+  changeStatusChat(
+    @Param('chat') chat: string,
+    @Param('status') status: string
+  ) {
+    return this.chatService.changeStatusChat(chat as unknown as bigint, +status);
+  }
+
+  @Get('delete/:chat')
+  deleteChat(@Param('chat') chat: string) {
+    return this.chatService.deleteChat(chat as unknown as bigint);
   }
 }
 

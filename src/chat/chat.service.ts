@@ -20,11 +20,47 @@ export class ChatService {
     private chatInterestsService: ChatInterestsService
   ) { }
 
+  async changeStatusChat(chat: bigint, status: number) {
+    const chatInDB = await this.findByChatId(chat)
+    console.log(chatInDB)
+    if (chatInDB) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.update({
+            where: {
+              chat,
+            },
+            data: { status }
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+  }
+
+  async deleteChat(chat: bigint) {
+    const chatInDB = await this.findByChatId(chat)
+    console.log(chatInDB)
+    if (chatInDB) {
+      return JSON.parse(
+        JSON.stringify(
+          await this.dbService.chat.delete({
+            where: {
+              chat,
+            },
+          }),
+          (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        ),
+      )
+    }
+  }
+
   async createChat(createChatDto: Prisma.chatCreateInput) {
+    const createChta = await this.dbService.chat.create({ data: createChatDto })
     await this.сhatPrivateService.addDefaultPrivate(createChatDto.chat as bigint)
     return JSON.parse(
       JSON.stringify(
-        await this.dbService.chat.create({ data: createChatDto }),
+        createChta,
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       ),
     )
@@ -111,9 +147,7 @@ export class ChatService {
     )
   }
 
-  async uploadFile(chat: bigint, images: { img0?: Express.Multer.File, img1?: Express.Multer.File, img2?: Express.Multer.File }) {
-    console.log(chat)
-    console.log(images)
+  async uploadFile(chat: bigint, images: { img0?: Express.Multer.File[], img1?: Express.Multer.File[], img2?: Express.Multer.File[] }) {
     return JSON.parse(
       JSON.stringify(
         await this.dbService.chat.update({
@@ -121,9 +155,9 @@ export class ChatService {
             chat,
           },
           data: {
-            img1: images.img0 ? Buffer.from(images.img0.buffer).toString('base64') : null,
-            img2: images.img1 ? Buffer.from(images.img1.buffer).toString('base64') : null,
-            img3: images.img2 ? Buffer.from(images.img2.buffer).toString('base64') : null
+            img1: images.img0 ? Buffer.from(images.img0[0].buffer).toString('base64') : 'null',
+            img2: images.img1 ? Buffer.from(images.img1[0].buffer).toString('base64') : 'null',
+            img3: images.img2 ? Buffer.from(images.img2[0].buffer).toString('base64') : 'null'
           },
         }),
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
